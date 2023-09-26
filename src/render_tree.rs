@@ -1,15 +1,17 @@
 use sfml::graphics::{Drawable, RenderTarget};
-use slab_tree::{NodeRef, Tree};
-use crate::tree::NamedNode;
+use slab_tree::{NodeRef};
 
-fn draw_tree_nodes_to(target: &mut dyn RenderTarget, node: NodeRef<'_, NamedNode<dyn Drawable>>) {
+use crate::tree::GameTree;
+
+fn draw_tree_nodes_to(target: &mut dyn RenderTarget, node: NodeRef<'_, Box<dyn Drawable>>) {
     for child in node.children() {
         draw_tree_nodes_to(target, child);
     }
-    target.draw(node.data().get_box().as_ref())
+    target.draw(node.data().as_ref())
 }
 
-pub fn draw_tree_to(target: &mut dyn RenderTarget, tree: &Tree<NamedNode<dyn Drawable>>) {
+pub fn draw_tree_to(target: &mut dyn RenderTarget, tree: &GameTree<Box<dyn Drawable>>) {
+    let tree = tree.tree();
     let root = tree
         .get(tree.root_id().expect("This tree has no root"))
         .unwrap();

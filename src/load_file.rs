@@ -1,8 +1,10 @@
 use serde::Deserialize;
-use sfml::{graphics::{CircleShape, Drawable, Transformable}, system::Vector2f};
-use slab_tree::{Tree, TreeBuilder};
+use sfml::{
+    graphics::{CircleShape, Drawable, Transformable},
+    system::Vector2f,
+};
 
-use crate::tree::NamedNode;
+use crate::tree::GameTree;
 
 #[derive(Debug, Deserialize)]
 struct TomlScene {
@@ -18,35 +20,33 @@ struct TomlNode {
 fn parse_toml() -> TomlScene {
     let toml_str = r#"
             [[nodes]]
-            path = "/"
+            path = "/render/help"
             position = 500.0
 
             [[nodes]]
-            path = "/shape1"
+            path = "/render/shape1"
         "#;
 
     toml::from_str(toml_str).unwrap()
 }
 
-pub fn load_tree_from_file() -> Tree<NamedNode<dyn Drawable>> {
+pub fn load_tree_from_file() -> GameTree<Box<dyn Drawable>> {
     let scene = parse_toml();
     println!("{:#?}", scene);
 
-    let mut tree = TreeBuilder::<NamedNode<dyn Drawable>>::new()
-        .with_root(NamedNode::new(String::from("/"), CircleShape::new(50., 30)))
-        .build();
-    let mut root = tree
-        .get_mut(tree.root_id().expect("NO ROOT PANIC"))
-        .unwrap();
+    let mut tree = GameTree::<Box<dyn Drawable>>::from_root(
+        "/render".to_string(),
+        Box::new(CircleShape::new(50., 30)) as Box<dyn Drawable>
+    );
     for node in scene.nodes {
         let mut shape = CircleShape::new(50., 30);
         match node.position {
             Some(pos) => {
                 shape.set_position(Vector2f::new(pos, pos));
-
-            }, None => {} 
+            }
+            None => {}
         }
-        root.append(NamedNode::new(node.path, shape));
+        tree.add_node(node.path, Box::new(shape));
     }
-    tree as Tree<NamedNode<(dyn Drawable + 'static)>>
+    tree
 }

@@ -11,6 +11,7 @@ use sfml::{
 
 fn main() {
 	let tree = load_file::load_tree_from_file();
+	println!("{tree}");
 	let mut window = RenderWindow::new((1000, 1000), 
 			"Oh My God",
 			Style::CLOSE,
