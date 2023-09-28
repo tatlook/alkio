@@ -9,7 +9,8 @@ pub struct GameTree<E> {
 }
 
 impl<E> GameTree<E> {
-    /// Create a game tree with a root and a root path
+
+    /// Create a game tree with a root and its path
     /// ```
     /// let tree = GameTree::<Box<dyn Drawable>>::from_root(
     ///     "/render".to_string(),

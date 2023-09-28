@@ -1,7 +1,9 @@
 use sfml::graphics::{Drawable, RenderTarget};
-use slab_tree::{NodeRef};
+use slab_tree::NodeRef;
 
 use crate::tree::GameTree;
+
+pub type RenderTree = GameTree<Box<dyn Drawable>>;
 
 fn draw_tree_nodes_to(target: &mut dyn RenderTarget, node: NodeRef<'_, Box<dyn Drawable>>) {
     for child in node.children() {
@@ -10,7 +12,7 @@ fn draw_tree_nodes_to(target: &mut dyn RenderTarget, node: NodeRef<'_, Box<dyn D
     target.draw(node.data().as_ref())
 }
 
-pub fn draw_tree_to(target: &mut dyn RenderTarget, tree: &GameTree<Box<dyn Drawable>>) {
+pub fn draw_tree_to(target: &mut dyn RenderTarget, tree: &RenderTree) {
     let tree = tree.tree();
     let root = tree
         .get(tree.root_id().expect("This tree has no root"))
