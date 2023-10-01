@@ -1,10 +1,10 @@
 use serde::Deserialize;
 use sfml::{
-    graphics::{CircleShape, Drawable, Transformable},
+    graphics::{CircleShape, Transformable},
     system::Vector2f,
 };
 
-use crate::{logic_tree::LogicTree, render_tree::RenderTree, scene::Scene};
+use crate::{logic_tree::LogicTree, render_tree::{RenderTree, RenderNode}, scene::Scene};
 
 #[derive(Debug, Deserialize)]
 struct TomlScene {
@@ -41,20 +41,17 @@ fn parse_toml() -> TomlScene {
     toml::from_str(toml_str).unwrap()
 }
 
-fn load_render_tree(scene: &TomlScene) -> RenderTree {
+fn load_render_tree<'a>(scene: &TomlScene) -> RenderTree<'a> {
     let mut tree = RenderTree::from_root(
         "/render".to_string(),
-        Box::new(CircleShape::new(50., 30)) as Box<dyn Drawable>,
+        RenderNode::CircleShape(CircleShape::new(50., 30)),
     );
     for node in &scene.render_nodes {
         let mut shape = CircleShape::new(50., 30);
-        match node.position {
-            Some(pos) => {
-                shape.set_position(Vector2f::new(pos, pos));
-            }
-            None => {}
+        if let Some(pos) = node.position {
+            shape.set_position(Vector2f::new(pos, pos));
         }
-        tree.add_node(node.path.to_owned(), Box::new(shape));
+        tree.add_node(node.path.to_owned(), RenderNode::CircleShape(shape));
     }
     tree
 }
@@ -67,7 +64,7 @@ fn load_logic_tree(scene: &TomlScene) -> LogicTree {
     tree
 }
 
-pub fn load_scene() -> Scene {
+pub fn load_scene<'a>() -> Scene<'a> {
     let scene = parse_toml();
     println!("{:#?}", scene);
 

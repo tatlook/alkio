@@ -9,11 +9,12 @@ use sfml::{
 	graphics::{RenderWindow, RenderTarget, Color},
 	window::{Style, Event},
 };
+use std::rc::Rc;
 
 use crate::logic_tree::run_logics;
 
 fn main() {
-	let scene = load_scene::load_scene();
+	let scene = Rc::new(load_scene::load_scene());
 	println!("{scene}");
 	let mut window = RenderWindow::new((1000, 1000), 
 			"Oh My God",
@@ -29,7 +30,7 @@ fn main() {
 		window.clear(Color::GREEN);
 		
 		draw_tree_to(&mut window, &scene.render_tree());
-		run_logics(&scene.logic_tree());
+		run_logics(scene.clone());
 
 		window.display();
 	}

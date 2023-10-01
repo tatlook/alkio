@@ -1,7 +1,7 @@
 
 use std::{collections::HashMap, fmt::Display};
 
-use slab_tree::{Tree, NodeId, TreeBuilder, NodeRef, NodeMut};
+use slab_tree::{Tree, NodeId, TreeBuilder, NodeMut};
 
 pub struct GameTree<E> {
     tree: Tree<E>,
@@ -29,23 +29,12 @@ impl<E> GameTree<E> {
     pub fn tree(&self) -> &Tree<E> {
         return &self.tree;
     }
-
-    pub fn find_node(&self, path: String) -> Option<NodeRef<E>> {
-        match self.path_map.get(&path) {
-            Some(&id) => {
-                self.tree.get(id)
-            },
-            None => Option::None
-        }
-    }
     
     pub fn find_node_mut(&mut self, path: String) -> Option<NodeMut<E>> {
-        match self.path_map.get(&path) {
-            Some(&id) => {
-                self.tree.get_mut(id)
-            },
-            None => Option::None
+        if let Some(&id) = self.path_map.get(&path) {
+            return self.tree.get_mut(id)
         }
+        None
     }
 }
 

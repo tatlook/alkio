@@ -4,20 +4,26 @@ use slab_tree::NodeId;
 
 use crate::{logic_tree::LogicTree, render_tree::RenderTree};
 
-pub struct Scene {
-    render_tree: RenderTree,
+pub struct Scene<'a> {
+    render_tree: RenderTree<'a>,
     logic_tree: LogicTree,
     peer_table: PeerTable,
 }
 
-struct PeerTableElement {
-    render_node: NodeId,
-    logic_node: NodeId,
+pub struct PeerTableElement {
+    pub render_node: NodeId,
+    pub logic_node: NodeId,
+}
+
+impl Clone for PeerTableElement {
+    fn clone(&self) -> Self {
+        Self { render_node: self.render_node.clone(), logic_node: self.logic_node.clone() }
+    }
 }
 
 /// Table of node peers.
 /// A node may have peer in another tree.
-struct PeerTable {
+pub struct PeerTable {
     table: Vec<PeerTableElement>,
 }
 
@@ -26,7 +32,7 @@ impl PeerTable {
         PeerTable { table: vec![] }
     }
 
-    fn find_peers_of_render(&self, id: NodeId) -> Option<&PeerTableElement> {
+    pub fn find_peers_of_logic(&self, id: NodeId) -> Option<&PeerTableElement> {
         for elem in &self.table {
             if elem.logic_node == id {
                 return Some(&elem);
@@ -36,8 +42,8 @@ impl PeerTable {
     }
 }
 
-impl Scene {
-    pub fn with_every_tree(render_tree: RenderTree, logic_tree: LogicTree) -> Self {
+impl<'a> Scene<'a> {
+    pub fn with_every_tree(render_tree: RenderTree<'a>, logic_tree: LogicTree) -> Self {
         Scene {
             render_tree,
             logic_tree,
@@ -52,9 +58,13 @@ impl Scene {
     pub fn logic_tree(&self) -> &LogicTree {
         &self.logic_tree
     }
+
+    pub fn peer_table(&self) -> &PeerTable {
+        &self.peer_table
+    }
 }
 
-impl Display for Scene {
+impl<'a> Display for Scene<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}{}", self.render_tree, self.logic_tree)
     }

@@ -1,33 +1,57 @@
+use sfml::graphics::{Drawable, Transformable, glsl::Vec2, CircleShape};
 use slab_tree::NodeRef;
 
-use crate::tree::GameTree;
-
+use crate::{
+    scene::{PeerTableElement, Scene},
+    tree::GameTree, render_tree::RenderNode,
+};
 
 pub type LogicTree = GameTree<String>;
-
+use std::rc::Rc;
 
 use rhai::{Engine, EvalAltResult};
 
-pub fn run_rhai(script: &str) -> Result<(), Box<EvalAltResult>>
-{
-    let engine = Engine::new();
+pub fn run_rhai<'a>(
+    script: &str,
+    peers: PeerTableElement,
+    scene: Rc<Scene<'a>>,
+) -> Result<(), Box<EvalAltResult>> {
+    let mut engine = Engine::new();
+    engine.register_fn("set_position", move |x: f32, y: f32| -> () {
+        let mut scene  = scene;
+        let mut render: &RenderNode<'a> = scene
+            .render_tree()
+            .tree()
+            .get(peers.render_node.to_owned())
+            .unwrap()
+            .data();
+        match render {
+            RenderNode::CircleShape(ref mut shape) => shape.set_position(Vec2::new(x, y)),
+        }
+    });
     engine.run(script)?;
 
-    // Done!
     Ok(())
 }
 
-fn run_logics_children(node: NodeRef<'_, String>) {
+fn run_logics_children<'a>(node: NodeRef<'_, String>, scene: Rc<Scene<'a>>) {
     for child in node.children() {
-        run_logics_children(child);
+        run_logics_children(child, scene.clone());
     }
-    run_rhai(node.data()).unwrap();
+    let peers = scene
+        .as_ref()
+        .peer_table()
+        .find_peers_of_logic(node.node_id())
+        .unwrap()
+        .clone();
+    run_rhai(node.data(), peers, scene.clone()).unwrap();
 }
 
-pub fn run_logics(logic_tree: &LogicTree) {
-    let tree = logic_tree.tree();
+pub fn run_logics<'a>(scene: Rc<Scene<'a>>) {
+    let tree = &mut scene.logic_tree().tree();
+
     let root = tree
-        .get(tree.root_id().expect("This tree has no root"))
+        .get(tree.root_id().expect("This tree has no root").to_owned())
         .unwrap();
-    run_logics_children(root);
+    run_logics_children(root, scene.clone());
 }
