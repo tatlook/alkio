@@ -34,7 +34,7 @@ fn parse_toml() -> TomlScene {
             path = "/render/shape1"
 
             [[logic_nodes]]
-            path = "/logic/hellowod" 
+            path = "/logic/help" 
             script = "print(\"yeeie\")"
         "#;
 

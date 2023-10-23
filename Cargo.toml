@@ -11,3 +11,4 @@ slab_tree = "0.3.2"
 toml = "0.8.0"
 serde = { version = "1", features = ["derive"]}
 rhai = "1.16.0"
+rand = "0.8.4"

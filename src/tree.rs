@@ -26,6 +26,10 @@ impl<E> GameTree<E> {
         tree
     }
 
+    pub fn tree_mut(&mut self) -> &mut Tree<E> {
+        &mut self.tree
+    }
+
     pub fn tree(&self) -> &Tree<E> {
         return &self.tree;
     }

@@ -1,7 +1,8 @@
-use std::fmt::Display;
+use std::{fmt::Display, rc::Rc};
 
+use parking_lot::ReentrantMutex;
 use slab_tree::NodeId;
-
+use std::cell::RefCell;
 use crate::{logic_tree::LogicTree, render_tree::RenderTree};
 
 pub struct Scene<'a> {
@@ -10,15 +11,10 @@ pub struct Scene<'a> {
     peer_table: PeerTable,
 }
 
+#[derive(Clone, Copy)]
 pub struct PeerTableElement {
     pub render_node: NodeId,
     pub logic_node: NodeId,
-}
-
-impl Clone for PeerTableElement {
-    fn clone(&self) -> Self {
-        Self { render_node: self.render_node.clone(), logic_node: self.logic_node.clone() }
-    }
 }
 
 /// Table of node peers.
@@ -51,6 +47,10 @@ impl<'a> Scene<'a> {
         }
     }
 
+    pub fn render_tree_mut(&mut self) -> &mut RenderTree<'a> {
+        &mut self.render_tree
+    }
+
     pub fn render_tree(&self) -> &RenderTree {
         &self.render_tree
     }
@@ -69,3 +69,5 @@ impl<'a> Display for Scene<'a> {
         write!(f, "{}{}", self.render_tree, self.logic_tree)
     }
 }
+
+pub type SceneRef<'a> = Rc<RefCell<Scene<'a>>>;

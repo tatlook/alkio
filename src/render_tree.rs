@@ -1,10 +1,11 @@
-use sfml::graphics::{Drawable, RenderTarget, CircleShape};
+use sfml::graphics::{Drawable, RenderTarget, CircleShape, Sprite};
 use slab_tree::NodeRef;
 
 use crate::tree::GameTree;
 
 pub enum RenderNode<'a> {
     CircleShape(CircleShape<'a>),
+    Sprite(Sprite<'a>),
 }
 
 impl<'a> RenderNode<'a> {
@@ -17,6 +18,7 @@ impl<'a> RenderNode<'a> {
     fn as_drawable(&self) -> &dyn Drawable {
         match self {
             RenderNode::CircleShape(shape) => shape,
+            RenderNode::Sprite(shape) => shape,
         }
     }
 }
@@ -27,11 +29,7 @@ fn draw_tree_nodes_to(target: &mut dyn RenderTarget, node: NodeRef<'_, RenderNod
     for child in node.children() {
         draw_tree_nodes_to(target, child);
     }
-    match node.data() {
-        RenderNode::CircleShape(shape) => {
-            target.draw(shape)
-        },
-    }
+    target.draw(node.data().as_drawable())
 }
 
 pub fn draw_tree_to(target: &mut dyn RenderTarget, tree: &RenderTree) {
