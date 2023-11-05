@@ -1,0 +1,13 @@
+[[render_nodes]]
+path = "/render/help"
+position = 500.0
+script = "print(\"yeeie\")"
+
+[[render_nodes]]
+path = "/render/shape1"
+position = 233.2
+script = ""
+
+[[render_nodes]]
+path = "/render/shape2"
+script = ""

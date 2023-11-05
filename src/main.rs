@@ -1,20 +1,20 @@
-mod render_tree;
-mod logic_tree;
-mod scene;
 mod load_scene;
+mod render_tree;
+mod scene;
+mod script;
 mod tree;
 
 use render_tree::draw_tree_to;
-use rhai::Locked;
+use script::run_tree_script;
 use sfml::{
 	graphics::{RenderWindow, RenderTarget, Color},
 	window::{Style, Event},
 };
 use std::{rc::Rc, cell::RefCell};
 
-use crate::logic_tree::run_logics;
 
 fn main() {
+	println!("{:?}", std::env::current_dir().unwrap());
 	let scene = Rc::new(RefCell::new(load_scene::load_scene()));
 	let mut window = RenderWindow::new((1000, 1000), 
 			"Oh My God",
@@ -30,7 +30,7 @@ fn main() {
 		window.clear(Color::GREEN);
 		
 		draw_tree_to(&mut window, &scene.borrow().render_tree());
-		run_logics(scene.clone());
+		run_tree_script(scene.borrow().render_tree());
 
 		window.display();
 	}

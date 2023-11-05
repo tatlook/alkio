@@ -1,20 +1,19 @@
 use std::{fmt::Display, rc::Rc};
 
-use parking_lot::ReentrantMutex;
 use slab_tree::NodeId;
 use std::cell::RefCell;
-use crate::{logic_tree::LogicTree, render_tree::RenderTree};
+use crate::render_tree::RenderTree;
 
 pub struct Scene<'a> {
     render_tree: RenderTree<'a>,
-    logic_tree: LogicTree,
     peer_table: PeerTable,
 }
 
 #[derive(Clone, Copy)]
 pub struct PeerTableElement {
     pub render_node: NodeId,
-    pub logic_node: NodeId,
+
+    // TODO: sound_node, collison_node, etc.
 }
 
 /// Table of node peers.
@@ -27,22 +26,12 @@ impl PeerTable {
     fn new() -> Self {
         PeerTable { table: vec![] }
     }
-
-    pub fn find_peers_of_logic(&self, id: NodeId) -> Option<&PeerTableElement> {
-        for elem in &self.table {
-            if elem.logic_node == id {
-                return Some(&elem);
-            }
-        }
-        None
-    }
 }
 
 impl<'a> Scene<'a> {
-    pub fn with_every_tree(render_tree: RenderTree<'a>, logic_tree: LogicTree) -> Self {
+    pub fn with_every_tree(render_tree: RenderTree<'a>) -> Self {
         Scene {
             render_tree,
-            logic_tree,
             peer_table: PeerTable::new(),
         }
     }
@@ -55,10 +44,6 @@ impl<'a> Scene<'a> {
         &self.render_tree
     }
 
-    pub fn logic_tree(&self) -> &LogicTree {
-        &self.logic_tree
-    }
-
     pub fn peer_table(&self) -> &PeerTable {
         &self.peer_table
     }
@@ -66,7 +51,7 @@ impl<'a> Scene<'a> {
 
 impl<'a> Display for Scene<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}{}", self.render_tree, self.logic_tree)
+        write!(f, "{}", self.render_tree)
     }
 }
 

@@ -12,3 +12,6 @@ toml = "0.8.0"
 serde = { version = "1", features = ["derive"]}
 rhai = "1.16.0"
 rand = "0.8.4"
+
+[build-dependencies]
+copy_to_output = "2.1.0"
