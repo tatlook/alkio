@@ -6,5 +6,5 @@ charset = utf-8
 insert_final_newline = true
 
 [*.rust]
-indent_style = tab
-tab_width = 8
+indent_style = space
+indent_size = 4

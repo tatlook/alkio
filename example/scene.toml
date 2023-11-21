@@ -1,13 +1,17 @@
 [[render_nodes]]
 path = "/render/help"
 position = 500.0
-script = "print(\"yeeie\")"
+script = ""
+variation = { Sprite.texture_path = "C:/Users/youzh/source/alkio/example/something.png" }
 
 [[render_nodes]]
 path = "/render/shape1"
-position = 233.2
+position = 300
 script = ""
+variation = { CircleShape.radius = 155.0 }
 
 [[render_nodes]]
 path = "/render/shape2"
+position = 600
 script = ""
+variation = { CircleShape.radius = 102.1 }

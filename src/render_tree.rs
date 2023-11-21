@@ -1,11 +1,11 @@
-use sfml::graphics::{Drawable, RenderTarget, CircleShape, Sprite};
+use sfml::graphics::{Drawable, RenderTarget, CircleShape, RcSprite, RcTexture};
 use slab_tree::NodeRef;
 
 use crate::tree::{GameTree, GameElement};
 
 pub enum RenderNode<'a> {
     CircleShape(CircleShape<'a>),
-    Sprite(Sprite<'a>),
+    Sprite(RcSprite, RcTexture),
 }
 
 impl<'a> RenderNode<'a> {
@@ -19,7 +19,7 @@ impl<'a> RenderNode<'a> {
     fn as_drawable(&self) -> &dyn Drawable {
         match self {
             RenderNode::CircleShape(shape) => shape,
-            RenderNode::Sprite(shape) => shape,
+            RenderNode::Sprite(shape, _texture) => shape,
         }
     }
 }

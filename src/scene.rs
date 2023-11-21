@@ -1,7 +1,6 @@
-use std::{fmt::Display, rc::Rc};
+use std::fmt::Display;
 
 use slab_tree::NodeId;
-use std::cell::RefCell;
 use crate::render_tree::RenderTree;
 
 pub struct Scene<'a> {
@@ -54,5 +53,3 @@ impl<'a> Display for Scene<'a> {
         write!(f, "{}", self.render_tree)
     }
 }
-
-pub type SceneRef<'a> = Rc<RefCell<Scene<'a>>>;
