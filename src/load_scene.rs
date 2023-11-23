@@ -1,4 +1,4 @@
-use rhai::Engine;
+use rhai::{Engine, Scope};
 use serde::Deserialize;
 use sfml::{
     graphics::{CircleShape, IntRect, Transformable, RcSprite, RcTexture},
@@ -53,8 +53,9 @@ fn load_render_tree<'a>(scene: &TomlScene) -> RenderTree<'a> {
     let render_rhai_engine = Rc::new(RefCell::new(Engine::new()));
     let mut tree = RenderTree::from_root(
         "/render".to_string(),
-        GameElement::from(RenderNode::CircleShape(CircleShape::new(50., 30))),
+        GameElement::from(RenderNode::CircleShape { shape: CircleShape::new(50., 30) }),
     );
+    let render_tree_scope = Scope::new();
     for node in &scene.render_nodes {
         let render_node = match &node.variation {
             TomlRenderNodeVariation::CircleShape { radius } => {
@@ -62,15 +63,17 @@ fn load_render_tree<'a>(scene: &TomlScene) -> RenderTree<'a> {
                 if let Some(pos) = node.position {
                     shape.set_position(Vector2f::new(pos, pos));
                 }
-                RenderNode::CircleShape(shape)
+                RenderNode::CircleShape { shape }
             }
             TomlRenderNodeVariation::Sprite { texture_path } => {
                 load_sprite(texture_path)
             }
         };
-        let mut elem = GameElement::from(render_node);
+        let mut elem = GameElement::<'_, RenderNode>::from(render_node);
         if let Some(script) = &node.script {
-            match Script::compile(render_rhai_engine.clone(), script.to_owned()) {
+            let scope = render_tree_scope.clone();
+            
+            match Script::compile(render_rhai_engine.clone(), scope, script.to_owned()) {
                 Ok(script) => elem.set_script(script),
                 Err(e) => eprintln!("Failed to compile script: {}", e),
             }
@@ -87,7 +90,7 @@ fn load_sprite<'a>(texture_path: &String) -> RenderNode<'a> {
         .load_from_file(&texture_path, IntRect::new(50, 50, 100, 100))
         .expect("File not found");
     sprite.set_texture(&texture, true);
-    RenderNode::Sprite(sprite, texture)
+    RenderNode::Sprite { shape: sprite, texture }
 }
 
 /// Load scene from example file.

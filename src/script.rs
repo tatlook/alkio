@@ -1,42 +1,41 @@
-use rhai::{Engine, ParseError, AST};
-use slab_tree::NodeRef;
+use rhai::{Engine, ParseError, AST, Scope};
+use slab_tree::NodeId;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::tree::{GameTree, GameElement};
+use crate::tree::GameTree;
 
 type EngineRef = Rc<RefCell<Engine>>;
 
-pub struct Script {
+pub struct Script<'a> {
     engine: EngineRef,
+    scope: Scope<'a>,
     ast: AST,
 }
 
-impl Script {
-    pub fn compile(engine: EngineRef, script: String) -> Result<Self, ParseError> {
-        let ast = engine.borrow().compile(script)?;
-        Ok(Script { engine, ast })
+impl<'a> Script<'a> {
+    pub fn compile(engine: EngineRef, scope: Scope<'a>, script: String) -> Result<Self, ParseError> {
+        let ast = engine.borrow().compile_with_scope(&scope, script)?;
+        Ok(Script { engine, scope, ast })
     }
 
-    pub fn run(&self) {
-        if let Err(e) = self.engine.borrow().run_ast(&self.ast) {
+    pub fn run(&mut self) {
+        if let Err(e) = self.engine.borrow().run_ast_with_scope(&mut self.scope, &self.ast) {
             eprintln!("Script's runtime error: {e}");
         }
     }
 }
 
-fn run_node_script<T>(node: NodeRef<'_, GameElement<T>>) {
-    for child in node.children() {
-        run_node_script(child);
-    }
-    if let Some(script) = node.data().script() {
-        script.run();
+fn run_node_script<'a, T>(tree: &mut GameTree<'a, T>, ids: Vec<NodeId>) {
+    for id in ids {
+        let mut node = tree.tree_mut().get_mut(id).unwrap();
+        if let Some(script) = node.data().script_mut() {
+            script.run();
+        }
     }
 }
 
-pub fn run_tree_script<T>(tree: &GameTree<T>) {
-    let root = tree
-        .get(tree.root_id().expect("This tree has no root"))
-        .unwrap();
-    run_node_script(root);
+pub fn run_tree_script<'a, T>(mut tree: &'a mut GameTree<T>) {
+    let all_ids = tree.collect_trees_node_ids();
+    run_node_script(&mut tree, all_ids);
 }

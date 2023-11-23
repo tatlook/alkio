@@ -4,12 +4,14 @@ mod scene;
 mod script;
 mod tree;
 
-use render_tree::draw_tree_to;
+use rand::Rng;
+use render_tree::{draw_tree_to, RenderNode, RenderTree};
 use script::run_tree_script;
 use sfml::{
-    graphics::{Color, RenderTarget, RenderWindow},
-    window::{Event, Style},
+    graphics::{Color, RenderTarget, RenderWindow, Transformable},
+    window::{Event, Style}, system::Vector2f,
 };
+use slab_tree::NodeId;
 use std::{cell::RefCell, rc::Rc};
 
 
@@ -29,8 +31,37 @@ fn main() {
         window.clear(Color::GREEN);
 
         draw_tree_to(&mut window, &scene.borrow().render_tree());
-        run_tree_script(scene.borrow().render_tree());
+        run_tree_script(scene.borrow_mut().render_tree_mut());
+        make_random(scene.borrow_mut().render_tree_mut());
 
         window.display();
     }
+}
+
+fn make_subrandom<'a>(tree: &mut RenderTree, ids: Vec<NodeId>) {
+    let mut rng = rand::thread_rng();
+    
+    for id in ids {
+        let mut node = tree.tree_mut().get_mut(id).unwrap();
+        let j = node.data().element_mut();
+        let xmove = rng.gen_range(-6..7) as f32;
+        let ymove = rng.gen_range(-6..7) as f32;
+        match j {
+            RenderNode::CircleShape { shape } => {
+                let mut pos = shape.position();
+                pos += Vector2f::new(xmove, ymove);
+                shape.set_position(pos);
+            }
+            RenderNode::Sprite { shape, texture: _ } => {
+                let mut pos = shape.position();
+                pos += Vector2f::new(xmove, ymove);
+                shape.set_position(pos);
+            },
+        }
+    }
+}
+
+fn make_random<'a>(tree: &mut RenderTree) {
+    let ids = tree.collect_trees_node_ids();
+    make_subrandom(tree, ids);
 }
