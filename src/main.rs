@@ -30,9 +30,9 @@ fn main() {
         }
         window.clear(Color::GREEN);
 
-        draw_tree_to(&mut window, &scene.borrow().render_tree());
-        run_tree_script(scene.borrow_mut().render_tree_mut());
-        make_random(scene.borrow_mut().render_tree_mut());
+        draw_tree_to(&mut window, &scene.borrow().render_tree().borrow());
+        run_tree_script(&mut scene.borrow_mut().render_tree().borrow_mut());
+        make_random(&mut scene.borrow_mut().render_tree().borrow_mut());
 
         window.display();
     }
@@ -52,7 +52,7 @@ fn make_subrandom<'a>(tree: &mut RenderTree, ids: Vec<NodeId>) {
                 pos += Vector2f::new(xmove, ymove);
                 shape.set_position(pos);
             }
-            RenderNode::Sprite { shape, texture: _ } => {
+            RenderNode::Sprite { shape } => {
                 let mut pos = shape.position();
                 pos += Vector2f::new(xmove, ymove);
                 shape.set_position(pos);

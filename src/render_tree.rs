@@ -1,19 +1,37 @@
-use sfml::graphics::{CircleShape, Drawable, RcSprite, RcTexture, RenderTarget};
-use slab_tree::NodeRef;
+use std::cell::RefCell;
+use std::rc::Rc;
 
-use crate::tree::{GameElement, GameTree};
+use sfml::{graphics::{CircleShape, Drawable, RcSprite, RenderTarget}, system::Vector2f};
+use slab_tree::{NodeRef, NodeId};
 
-pub struct CircleShapeApi {}
+use crate::tree::{GameTree, GameElement};
+
+#[derive(Clone)]
+pub struct CircleShapeApi<'a> {
+    id: NodeId,
+    tree: Rc<RefCell<RenderTree<'a>>>,
+}
+
+impl<'a> CircleShapeApi<'a> {
+    pub fn new(id: NodeId, tree: Rc<RefCell<RenderTree<'a>>>) -> Self {
+        CircleShapeApi { id, tree }
+    }
+
+    pub fn set_position(&mut self, _position: Vector2f) {
+        self.tree.borrow_mut().tree_mut().get_mut(self.id);
+        todo!()
+    }
+}
 
 pub struct SpriteApi {}
 
+#[derive(Clone)]
 pub enum RenderNode<'a> {
     CircleShape {
         shape: CircleShape<'a>,
     },
     Sprite {
         shape: RcSprite,
-        texture: RcTexture,
     },
 }
 
@@ -22,7 +40,7 @@ impl<'a> RenderNode<'a> {
     fn as_drawable(&self) -> &dyn Drawable {
         match self {
             RenderNode::CircleShape{shape} => shape,
-            RenderNode::Sprite{shape, texture: _} => shape,
+            RenderNode::Sprite{shape} => shape,
         }
     }
 }

@@ -13,5 +13,5 @@ variation = { CircleShape.radius = 155.0 }
 [[render_nodes]]
 path = "/render/shape2"
 position = 600
-script = ""
+script = "o.hello();"
 variation = { CircleShape.radius = 102.1 }

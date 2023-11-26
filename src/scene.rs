@@ -1,10 +1,13 @@
 use std::fmt::Display;
 
+
+use std::cell::RefCell;
+use std::rc::Rc;
 use slab_tree::NodeId;
 use crate::render_tree::RenderTree;
 
 pub struct Scene<'a> {
-    render_tree: RenderTree<'a>,
+    render_tree: Rc<RefCell<RenderTree<'a>>>,
     peer_table: PeerTable,
 }
 
@@ -28,19 +31,15 @@ impl PeerTable {
 }
 
 impl<'a> Scene<'a> {
-    pub fn with_every_tree(render_tree: RenderTree<'a>) -> Self {
+    pub fn with_every_tree(render_tree: Rc<RefCell<RenderTree<'a>>>) -> Self {
         Scene {
             render_tree,
             peer_table: PeerTable::new(),
         }
     }
 
-    pub fn render_tree_mut(&mut self) -> &mut RenderTree<'a> {
-        &mut self.render_tree
-    }
-
-    pub fn render_tree(&self) -> &RenderTree {
-        &self.render_tree
+    pub fn render_tree(&self) -> Rc<RefCell<RenderTree<'a>>> {
+        self.render_tree.clone()
     }
 
     pub fn peer_table(&self) -> &PeerTable {
@@ -50,6 +49,6 @@ impl<'a> Scene<'a> {
 
 impl<'a> Display for Scene<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.render_tree)
+        write!(f, "{}", self.render_tree.borrow())
     }
 }

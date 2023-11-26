@@ -3,10 +3,11 @@ use std::{
     fmt::Display,
 };
 
-use slab_tree::{NodeId, NodeMut, Tree, TreeBuilder, NodeRef};
+use slab_tree::{NodeId, Tree, TreeBuilder, NodeRef};
 
 use crate::script::Script;
 
+#[derive(Clone)]
 pub struct GameElement<'a, E> {
     node: E,
     script: Option<Script<'a>>,
@@ -79,9 +80,9 @@ impl<'a, E> GameTree<'a, E> {
         Self::collect_node_ids(self.tree().root().expect("This tree as no root"))
     }
 
-    pub fn find_node_mut(&mut self, path: String) -> Option<NodeMut<GameElement<'a, E>>> {
+    pub fn find_node(&self, path: String) -> Option<NodeId> {
         if let Some(&id) = self.path_map.get(&path) {
-            return self.tree.get_mut(id);
+            return Some(id);
         }
         None
     }
@@ -110,11 +111,13 @@ fn path_parent(path: &String) -> String {
 }
 
 impl<'a, E> GameTree<'a, E> {
-    pub fn add_node(&mut self, path: String, elem: GameElement<'a, E>) {
+    pub fn add_node(&mut self, path: String, elem: GameElement<'a, E>) -> NodeId {
         let parent_path = path_parent(&path);
-        let mut parent = self.find_node_mut(parent_path).unwrap();
+        let parent_id = self.find_node(parent_path).unwrap();
+        let mut parent = self.tree.get_mut(parent_id).unwrap();
         let id = parent.append(elem).node_id();
         self.path_map.insert(path, id);
+        id
     }
 }
 

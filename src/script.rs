@@ -7,6 +7,7 @@ use crate::tree::GameTree;
 
 type EngineRef = Rc<RefCell<Engine>>;
 
+#[derive(Clone)]
 pub struct Script<'a> {
     engine: EngineRef,
     scope: Scope<'a>,
